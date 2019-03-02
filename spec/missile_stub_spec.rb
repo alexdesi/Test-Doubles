@@ -31,5 +31,4 @@ describe Platform do
     expect(Platform.launch_missile(dummy_missile, launch_code)).to eq(false)
   end
 
-
 end

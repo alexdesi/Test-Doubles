@@ -1,12 +1,13 @@
 require 'spec_helper'
 
 class Platform
-  def self.launch_missile(missile, code, used_codes = [])
+  def self.launch_missile(missile, code, used_codes)
     case code
     when 'correct'
       if used_codes.contains?(code)
         missile.disable
       else
+        used_codes.push_code(code)
         missile.launch
       end
     when 'unsigned', 'expired'
@@ -15,7 +16,25 @@ class Platform
   end
 end
 
+class FakeUsedLaunchCode
+  attr_accessor :used_codes
+
+  def initialize
+    @used_codes = []
+  end
+
+  def contains?(code)
+    used_codes.include? code
+  end
+
+  def push_code(code)
+    used_codes << code
+  end
+end
+
 describe Platform do
+  let(:fake_used_launch_code) { FakeUsedLaunchCode.new }
+
   class MockMissile
     attr_reader :launch_was_called, :disable_was_called
 
@@ -40,11 +59,11 @@ describe Platform do
 
   let(:mock_missile) { MockMissile.new }
 
-  context 'when launch code is not expired' do
+  context 'when launch code is correct' do
     let(:launch_code) { 'correct' }
 
     it 'does launch missile' do
-      Platform.launch_missile(mock_missile, launch_code)
+      Platform.launch_missile(mock_missile, launch_code, fake_used_launch_code)
 
       expect(mock_missile.launch_was_called).to eq(true)
     end
@@ -54,7 +73,7 @@ describe Platform do
     let(:launch_code) { 'expired' }
 
     it 'does not launch missile and disables missile' do
-      Platform.launch_missile(mock_missile, launch_code)
+      Platform.launch_missile(mock_missile, launch_code, fake_used_launch_code)
 
       mock_missile.verify_code_red_abort(self)
     end
@@ -64,7 +83,7 @@ describe Platform do
     let(:launch_code) { 'unsigned' }
 
     it 'does not launch missile and disables missile' do
-      Platform.launch_missile(mock_missile, launch_code)
+      Platform.launch_missile(mock_missile, launch_code, fake_used_launch_code)
 
       mock_missile.verify_code_red_abort(self)
     end
@@ -83,30 +102,3 @@ describe Platform do
     end
   end
 end
-
-class FakeUsedLaunchCode
-  attr_accessor :used_codes
-
-  def initialize
-    @used_codes = []
-  end
-
-  def contains?(code)
-    true
-  end
-end
-
-
-#
-# class UsedLaunchCodesTest {
-#   @Test
-#   void contains(){
-#     UsedLaunchCodes usedLaunchCodes = new FakeUsedLaunchCodes();
-#
-#     assertFalse(usedLaunchCodes.contains(launchCode));
-#
-#     usedLaunchCodes.add(launchCode);
-#
-#     assertTrue(usedLaunchCodes.contains(launchCode));
-#   }
-# }

@@ -5,10 +5,8 @@ class Platform
     case code
     when 'correct'
       missile.launch
-      true
     when 'unsigned', 'expired'
       missile.disable
-      false
     end
   end
 end

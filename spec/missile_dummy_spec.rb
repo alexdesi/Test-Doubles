@@ -11,13 +11,13 @@ class Platform
   end
 end
 
-describe Platform do
-  class DummyMissile
-    def launch
-      raise 'BOOM!'
-    end
+class DummyMissile
+  def launch
+    raise 'BOOM!'
   end
+end
 
+describe Platform do
   it 'does not launch missile when launch code is expired' do
     dummy_missile = DummyMissile.new
     launch_code = false
